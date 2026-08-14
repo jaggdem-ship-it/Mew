@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 export class LevelTransitionScene extends Phaser.Scene {
   constructor() { super({ key: "LevelTransitionScene" }); }
 

@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 export const gameConfig = {
   type: Phaser.AUTO,
   width: 480,

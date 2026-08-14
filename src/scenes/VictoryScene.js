@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import { SaveManager } from "../systems/SaveManager.js";
 
 export class VictoryScene extends Phaser.Scene {

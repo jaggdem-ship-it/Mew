@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import { HealthOrb } from "../ui/HealthOrb.js";
 import { XPBar } from "../ui/XPBar.js";
 

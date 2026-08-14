@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 export class BossIntroOverlayScene extends Phaser.Scene {
   constructor() { super({ key: "BossIntroOverlayScene" }); }
 

@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import { CLASSES } from "../data/classes.js";
 import { AudioManager } from "../systems/AudioManager.js";
 
