@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { LEVELS } from "../data/levels.js";
 import { CLASSES } from "../data/classes.js";
 import { WEAPONS } from "../data/weapons.js";

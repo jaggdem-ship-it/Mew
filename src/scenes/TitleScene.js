@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { AudioManager } from "../systems/AudioManager.js";
 import { SaveManager } from "../systems/SaveManager.js";
 

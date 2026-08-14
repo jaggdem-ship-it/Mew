@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { SaveManager } from "../systems/SaveManager.js";
 
 export class SettingsScene extends Phaser.Scene {
