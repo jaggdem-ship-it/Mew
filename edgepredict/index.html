@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="EdgePredict — quantitative sports forecasting and market-edge analysis." />
+  <title>EdgePredict — Quant Sports Forecasting</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">E</span><div><strong>EDGEPREDICT</strong><small>QUANT SPORTS LAB</small></div></div>
+      <nav>
+        <button class="nav-item active">⌁ <span>Market Edge</span></button>
+        <button class="nav-item">◈ <span>Forecasts</span></button>
+        <button class="nav-item">◎ <span>Player Props</span></button>
+        <button class="nav-item">↗ <span>Line Movement</span></button>
+        <button class="nav-item">▣ <span>Model Lab</span></button>
+        <button class="nav-item">◫ <span>Bet Journal</span></button>
+      </nav>
+      <div class="model-card"><div class="eyebrow">MODEL STATUS</div><div class="status"><i></i> ONLINE</div><p>Ensemble v0.1 · calibrated probabilities · pre-game mode</p></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar"><div><div class="eyebrow">FRIDAY · AUG 14, 2026</div><h1>Market Edge</h1></div><div class="controls"><select id="sport"><option>All Sports</option><option>NBA</option><option>NFL</option><option>MLB</option><option>NHL</option></select><select id="market"><option>All Markets</option><option>Moneyline</option><option>Spread</option><option>Total</option><option>Props</option></select><button id="refresh" class="ghost">↻ Refresh</button></div></header>
+
+      <section class="hero-grid">
+        <div class="metric"><span>QUALIFIED EDGES</span><strong id="edgeCount">3</strong><small>above 3% model edge</small></div>
+        <div class="metric"><span>MODEL ACCURACY</span><strong>—</strong><small>requires live historical evaluation</small></div>
+        <div class="metric"><span>CALIBRATION</span><strong>READY</strong><small>probability-first architecture</small></div>
+        <div class="metric"><span>RISK MODE</span><strong>CONSERVATIVE</strong><small>no forced picks</small></div>
+      </section>
+
+      <section class="section-head"><div><h2>Highest Model Edge</h2><p>Ranked by estimated expected value, uncertainty and market price.</p></div><div class="legend"><span class="dot green"></span> Positive EV <span class="dot amber"></span> Watch</div></section>
+      <section id="cards" class="cards"></section>
+
+      <section class="lower-grid">
+        <div class="panel"><div class="panel-head"><div><h2>Model reasoning</h2><p id="reasonTitle">Select a forecast</p></div><span id="grade" class="grade">—</span></div><div id="reasoning" class="reasoning"><div class="empty">Select a card above to inspect the model's decomposition.</div></div></div>
+        <div class="panel"><div class="panel-head"><div><h2>Risk controls</h2><p>Guardrails before a position is considered.</p></div></div><div class="risk-list"><div><span>Minimum edge</span><b>3.0%</b></div><div><span>Minimum model confidence</span><b>0.58</b></div><div><span>Maximum uncertainty penalty</span><b>15%</b></div><div><span>Correlation protection</span><b>ON</b></div><div><span>Auto-bet</span><b class="muted">OFF</b></div></div></div>
+      </section>
+
+      <footer>Educational forecasting interface · Probabilities are estimates, not guarantees. Betting involves financial risk.</footer>
+    </main>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
