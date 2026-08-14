@@ -1,0 +1,72 @@
+import { SaveManager } from "../systems/SaveManager.js";
+
+export class SettingsScene extends Phaser.Scene {
+  constructor() { super({ key: "SettingsScene" }); }
+
+  create() {
+    const w = this.scale.width;
+    const h = this.scale.height;
+    const save = SaveManager.load();
+
+    this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.85);
+    this.add.text(w / 2, 25, "SETTINGS", {
+      fontSize: "20px", color: "#ffffff", fontStyle: "bold"
+    }).setOrigin(0.5);
+
+    const settings = [
+      { key: "master", label: "Master Volume", min: 0, max: 1, step: 0.1, value: save.settings.master },
+      { key: "bgm", label: "Music Volume", min: 0, max: 1, step: 0.1, value: save.settings.bgm },
+      { key: "sfx", label: "SFX Volume", min: 0, max: 1, step: 0.1, value: save.settings.sfx }
+    ];
+
+    settings.forEach((s, i) => {
+      const y = 60 + i * 30;
+      this.add.text(40, y, s.label, { fontSize: "11px", color: "#ffffff" }).setOrigin(0, 0.5);
+
+      const track = this.add.rectangle(200, y, 100, 6, 0x333333).setInteractive();
+      const fill = this.add.rectangle(150, y, s.value * 100, 6, 0xe94560).setOrigin(0, 0.5);
+      const valText = this.add.text(260, y, Math.round(s.value * 100) + "%", {
+        fontSize: "10px", color: "#aaaaaa"
+      }).setOrigin(0, 0.5);
+
+      track.on("pointerdown", (pointer) => {
+        const localX = pointer.x - 150;
+        let val = MathUtils.clamp(localX / 100, 0, 1);
+        val = Math.round(val / s.step) * s.step;
+        fill.width = val * 100;
+        valText.setText(Math.round(val * 100) + "%");
+        save.settings[s.key] = val;
+        SaveManager.save(save);
+      });
+    });
+
+    // Toggles
+    const toggles = [
+      { key: "shake", label: "Screen Shake", value: save.settings.shake },
+      { key: "hitstop", label: "Hit Stop", value: save.settings.hitstop }
+    ];
+    toggles.forEach((t, i) => {
+      const y = 160 + i * 25;
+      this.add.text(40, y, t.label, { fontSize: "11px", color: "#ffffff" }).setOrigin(0, 0.5);
+      const btn = this.add.text(200, y, t.value ? "ON" : "OFF", {
+        fontSize: "11px", color: t.value ? "#00ff00" : "#ff0000"
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      btn.on("pointerdown", () => {
+        t.value = !t.value;
+        btn.setText(t.value ? "ON" : "OFF");
+        btn.setColor(t.value ? "#00ff00" : "#ff0000");
+        save.settings[t.key] = t.value;
+        SaveManager.save(save);
+      });
+    });
+
+    const back = this.add.text(w / 2, h - 20, "Close", {
+      fontSize: "14px", color: "#ffffff"
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    back.on("pointerover", () => back.setColor("#e94560"));
+    back.on("pointerout", () => back.setColor("#ffffff"));
+    back.on("pointerdown", () => {
+      this.scene.stop();
+    });
+  }
+}
