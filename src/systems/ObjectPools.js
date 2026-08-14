@@ -1,22 +1,14 @@
 import { ObjectPoolBase } from "../utils/ObjectPoolBase.js";
+import { Projectile } from "../entities/Projectile.js";
 
 export class ObjectPools {
   constructor(scene) {
     this.scene = scene;
     this.projectiles = new ObjectPoolBase(
       scene,
-      () => scene.add.image(0, 0, "firebolt"),
-      (obj, x, y, textureKey, scale, speed, angle, damage, pierce) => {
-        obj.setTexture(textureKey);
-        obj.setPosition(x, y);
-        obj.setScale(scale);
-        obj.setRotation(angle);
-        obj.speed = speed;
-        obj.angleVal = angle;
-        obj.damage = damage;
-        obj.pierce = pierce;
-        obj.hitEnemies = new Set();
-        obj.lifetime = 3000;
+      () => new Projectile(scene),
+      (proj, x, y, textureKey, scale, speed, angle, damage, pierce) => {
+        proj.reset(x, y, textureKey, scale, speed, angle, damage, pierce);
       }
     );
     this.particles = new ObjectPoolBase(

@@ -15,6 +15,8 @@ import { HazardSystem } from "../systems/HazardSystem.js";
 import { ProgressionSystem } from "../systems/ProgressionSystem.js";
 import { ObjectPools } from "../systems/ObjectPools.js";
 import { SaveManager } from "../systems/SaveManager.js";
+import { JuiceSystem } from "../systems/JuiceSystem.js";
+import { MathUtils } from "../utils/MathUtils.js";
 import { BossBanner } from "../ui/BossBanner.js";
 import { CardPanel } from "../ui/CardPanel.js";
 
@@ -75,6 +77,8 @@ export class LevelScene extends Phaser.Scene {
     this.pools = new ObjectPools(this);
     this.weaponSystem = new WeaponSystem(this, this.runState);
     this.progression = new ProgressionSystem(this.runState);
+    this.juice = new JuiceSystem(this);
+    this.shownLevel = this.progression.level;
 
     // Player
     const classKey = this.registry.get("selectedClass") || "barbarian";
@@ -157,6 +161,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.paused || this.gameOver) return;
 
     const dt = delta;
+    if (!this.juice.update(dt)) return;
     this.levelTime += dt;
 
     // Update timer display
@@ -375,5 +380,20 @@ export class LevelScene extends Phaser.Scene {
     } else {
       this.scene.stop("PauseScene");
     }
+  }
+
+  getNearestEnemy(x, y) {
+    let nearest = null;
+    let bestDist = Infinity;
+    for (const e of this.enemies) {
+      if (!e.active) continue;
+      const d = MathUtils.distance(x, y, e.x, e.y);
+      if (d < bestDist) { bestDist = d; nearest = e; }
+    }
+    if (this.boss && this.boss.active) {
+      const d = MathUtils.distance(x, y, this.boss.x, this.boss.y);
+      if (d < bestDist) nearest = this.boss;
+    }
+    return nearest;
   }
 }

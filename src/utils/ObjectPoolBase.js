@@ -8,7 +8,7 @@ export class ObjectPoolBase {
     for (let i = 0; i < initialSize; i++) {
       const obj = this.createFn();
       obj.active = false;
-      obj.visible = false;
+      if (obj.visible !== undefined) obj.visible = false;
       this.pool.push(obj);
     }
   }
@@ -20,23 +20,31 @@ export class ObjectPoolBase {
       this.pool.push(obj);
     }
     obj.active = true;
-    obj.visible = true;
+    if (obj.visible !== undefined) obj.visible = true;
     this.resetFn(obj, ...args);
     this.active.push(obj);
     return obj;
   }
 
   release(obj) {
-    obj.active = false;
-    obj.visible = false;
+    if (obj.release) {
+      obj.release();
+    } else {
+      obj.active = false;
+      if (obj.visible !== undefined) obj.visible = false;
+    }
     const idx = this.active.indexOf(obj);
     if (idx >= 0) this.active.splice(idx, 1);
   }
 
   releaseAll() {
     for (const obj of this.active) {
-      obj.active = false;
-      obj.visible = false;
+      if (obj.release) {
+        obj.release();
+      } else {
+        obj.active = false;
+        if (obj.visible !== undefined) obj.visible = false;
+      }
     }
     this.active = [];
   }

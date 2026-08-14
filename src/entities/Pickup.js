@@ -15,39 +15,84 @@ export class Pickup {
     const textureMap = { xp: "xp_gem", gold: "gold_coin", health: "health_potion" };
     const texture = textureMap[type] || "xp_gem";
     this.sprite = scene.add.image(x, y, texture);
-    this.sprite.setScale(0.6);
+    this.sprite.setScale(0);
     this.sprite.setDepth(2);
+
+    // Spawn pop
+    scene.tweens.add({
+      targets: this.sprite,
+      scale: 0.6,
+      duration: 300,
+      ease: "Back.easeOut"
+    });
+
+    // Glow ring for elites / valuable drops
+    if (type === "gold" || type === "health") {
+      this.glow = scene.add.circle(x, y, 8, type === "gold" ? 0xFFD700 : 0xFF0000, 0.15);
+      this.glow.setDepth(1);
+      scene.tweens.add({
+        targets: this.glow,
+        alpha: { from: 0.1, to: 0.3 },
+        scale: { from: 1, to: 1.3 },
+        duration: 600,
+        yoyo: true,
+        repeat: -1
+      });
+    }
   }
 
   update(dt, player) {
     if (!this.active) return;
     this.lifetime -= dt;
     if (this.lifetime <= 0) {
-      this.shouldDestroy = true;
+      this.fadeOut();
       return;
     }
 
     const bob = Math.sin(this.scene.time.now / 300 + this.floatOffset) * 3;
+    const pulse = 0.6 + Math.sin(this.scene.time.now / 400 + this.floatOffset) * 0.08;
     this.sprite.y = this.y + bob;
-    this.sprite.setScale(0.6 + Math.sin(this.scene.time.now / 400 + this.floatOffset) * 0.1);
+    this.sprite.setScale(pulse);
+    if (this.glow) this.glow.setPosition(this.x, this.y + bob);
 
     const magnetRadius = 60 * player.magnetMult;
     const dist = MathUtils.distance(this.x, this.sprite.y, player.x, player.y);
+
     if (dist < magnetRadius) {
       const angle = MathUtils.angleTo(this.x, this.sprite.y, player.x, player.y);
-      const pullSpeed = 150 * (1 - dist / magnetRadius);
+      const pullSpeed = 180 * (1 - dist / magnetRadius);
       this.x += Math.cos(angle) * pullSpeed * (dt / 1000);
       this.y += Math.sin(angle) * pullSpeed * (dt / 1000);
       this.sprite.setPosition(this.x, this.y + bob);
+      // Magnet trail
+      if (Math.random() < 0.2) {
+        const color = this.type === "xp" ? 0x00ffff : this.type === "gold" ? 0xffd700 : 0xff0000;
+        this.scene.juice.spawnTrail(this.x, this.sprite.y, color, 0.2, 100);
+      }
     }
 
-    if (dist < 16) this.collect(player);
+    if (dist < 18) this.collect(player);
   }
 
   collect(player) {
     this.shouldDestroy = true;
     this.active = false;
-    this.sprite.destroy();
+
+    // Collection burst
+    const color = this.type === "xp" ? 0x00ffff : this.type === "gold" ? 0xffd700 : 0xff0000;
+    this.scene.juice.collectBurst(this.x, this.y, color);
+
+    // Shrink and destroy
+    this.scene.tweens.add({
+      targets: this.sprite,
+      scale: 0,
+      alpha: 0,
+      duration: 150,
+      onComplete: () => {
+        this.sprite.destroy();
+        if (this.glow) this.glow.destroy();
+      }
+    });
 
     if (this.type === "xp") {
       this.scene.progression.addXp(this.amount);
@@ -59,5 +104,19 @@ export class Pickup {
       player.heal(this.amount);
       this.scene.audio.playSfx("pickup_health");
     }
+  }
+
+  fadeOut() {
+    this.shouldDestroy = true;
+    this.scene.tweens.add({
+      targets: this.sprite,
+      alpha: 0,
+      scale: 0,
+      duration: 300,
+      onComplete: () => {
+        this.sprite.destroy();
+        if (this.glow) this.glow.destroy();
+      }
+    });
   }
 }

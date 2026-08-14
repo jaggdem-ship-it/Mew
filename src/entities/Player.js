@@ -1,5 +1,6 @@
 import { CONSTANTS } from "../config/GameConfig.js";
 import { CLASSES } from "../data/classes.js";
+import { MathUtils } from "../utils/MathUtils.js";
 
 export class Player {
   constructor(scene, x, y, classKey, runState) {
@@ -34,11 +35,15 @@ export class Player {
     this.inFrostZone = false;
     this.dead = false;
     this.facing = 1;
+    this.runCycle = 0;
 
     this.keys = scene.input.keyboard.addKeys({
       up: "W", down: "S", left: "A", right: "D",
       up2: "UP", down2: "DOWN", left2: "LEFT", right2: "RIGHT"
     });
+
+    // Idle breathing animation
+    scene.juice.animateIdle(this.sprite, 0.12, 0.8, 0.01);
   }
 
   update(dt) {
@@ -51,13 +56,28 @@ export class Player {
     if (this.keys.left.isDown || this.keys.left2.isDown) dx -= 1;
     if (this.keys.right.isDown || this.keys.right2.isDown) dx += 1;
 
-    if (dx !== 0 || dy !== 0) {
+    const isMoving = dx !== 0 || dy !== 0;
+
+    if (isMoving) {
       const len = Math.sqrt(dx * dx + dy * dy);
       dx /= len;
       dy /= len;
       this.facing = dx < 0 ? -1 : 1;
-      this.sprite.setScale(Math.abs(this.sprite.scaleX) * this.facing, Math.abs(this.sprite.scaleY));
+
+      // Run cycle bob
+      this.runCycle += dt;
+      const runBob = Math.sin(this.runCycle / 80) * 2;
+      this.sprite.y = this.y + runBob;
+      // Run lean
+      this.sprite.setRotation(dy * 0.05);
+    } else {
+      // Return to idle
+      this.sprite.y = this.y;
+      this.sprite.setRotation(0);
     }
+
+    // Flip sprite based on facing
+    this.sprite.setScale(0.12 * this.facing, 0.12);
 
     let moveSpeed = this.speed;
     if (this.inFrostZone) moveSpeed *= 0.6;
@@ -70,7 +90,7 @@ export class Player {
     this.x = Math.max(16, Math.min(w - 16, this.x));
     this.y = Math.max(24, Math.min(h - 24, this.y));
 
-    this.sprite.setPosition(this.x, this.y);
+    this.sprite.x = this.x;
 
     if (this.invulnTimer > 0) {
       this.invulnTimer -= dt;
@@ -85,8 +105,18 @@ export class Player {
     const dmg = Math.max(1, amount * this.damageTakenMult - this.armor);
     this.hp -= dmg;
     this.invulnTimer = 500;
-    this.scene.cameras.main.shake(100, 0.005);
-    this.scene.audio.playSfx("hit");
+
+    // Juice: player hit
+    this.scene.juice.playerHitFlash(this.sprite);
+    this.scene.juice.damageArc(this.x, this.y - 20, Math.floor(dmg), false);
+
+    // Knockback from nearest enemy
+    const nearest = this.scene.getNearestEnemy(this.x, this.y);
+    if (nearest) {
+      const angle = MathUtils.angleTo(nearest.x, nearest.y, this.x, this.y);
+      this.x += Math.cos(angle) * 10;
+      this.y += Math.sin(angle) * 10;
+    }
 
     if (this.hp <= 0) {
       this.hp = 0;
@@ -95,13 +125,32 @@ export class Player {
   }
 
   heal(amount) {
+    const oldHp = this.hp;
     this.hp = Math.min(this.maxHp, this.hp + amount);
+    const healed = this.hp - oldHp;
+    if (healed > 0) {
+      // Heal popup
+      const healText = this.scene.add.text(this.x, this.y - 30, `+${Math.floor(healed)}`, {
+        fontSize: "12px", color: "#00ff00", fontStyle: "bold",
+        stroke: "#000000", strokeThickness: 2
+      }).setOrigin(0.5).setDepth(100);
+      this.scene.tweens.add({
+        targets: healText,
+        y: this.y - 60,
+        alpha: 0,
+        duration: 800,
+        onComplete: () => healText.destroy()
+      });
+      // Heal pulse
+      this.scene.juice.spawnTrail(this.x, this.y, 0x00FF00, 0.5, 300);
+    }
   }
 
   die() {
     this.dead = true;
-    this.sprite.setAlpha(0.3);
-    this.scene.events.emit("player_death");
+    this.scene.juice.playerDeath(this.sprite, () => {
+      this.scene.events.emit("player_death");
+    });
   }
 
   getPosition() {
