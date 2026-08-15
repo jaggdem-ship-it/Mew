@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanctuary Survivors</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0d1b2a; overflow: hidden; }
+    #game-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    canvas { image-rendering: pixelated; }
+    #error-log { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: #ff4444; font-family: monospace; font-size: 12px; padding: 20px; overflow: auto; z-index: 9999; display: none; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <pre id="error-log"></pre>
+  <script type="importmap">
+  {
+    "imports": {
+      "phaser": "https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.esm.min.js"
+    }
+  }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.min.js"></script>
+  <script>
+    window.onerror = function(msg, url, line, col, err) {
+      const log = document.getElementById('error-log');
+      log.style.display = 'block';
+      log.textContent += 'ERROR: ' + msg + ' at ' + url + ':' + line + ':' + col + '\n';
+      if (err && err.stack) log.textContent += err.stack + '\n';
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      const log = document.getElementById('error-log');
+      log.style.display = 'block';
+      log.textContent += 'UNHANDLED REJECTION: ' + e.reason + '\n';
+      if (e.reason && e.reason.stack) log.textContent += e.reason.stack + '\n';
+    });
+  </script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
